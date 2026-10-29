@@ -1,15 +1,15 @@
-// Package manifest is the Nexora addon contract: the manifest an addon
-// keeps as nexora-addon.json at the root of its repository and serves at
-// /.well-known/nexora-addon.json, its signature, and the body the panel
+// Package manifest is the NX addon contract: the manifest an addon
+// keeps as nx-addon.json at the root of its repository and serves at
+// /.well-known/nx-addon.json, its signature, and the body the panel
 // delivers an addon's credentials in. The panel, the directory at
-// addons.nexora-panel.org and an addon all read it through this package,
+// addons.nx-panel.org and an addon all read it through this package,
 // so they cannot disagree about what a valid manifest is.
 //
 // Two versions are spoken. `api: 0` is what a running addon serves for
 // registration; `api: 1` adds what the directory and the install wizard read
 // before anything runs — the install section and its questions,
 // descriptions, the panel it needs (install.go). Version 1 is frozen with
-// the first release of Nexora Shop; until then it may still change. The
+// the first release of NX Shop; until then it may still change. The
 // specification is SPEC.md beside this module.
 package manifest
 
@@ -31,10 +31,10 @@ const API = 1
 var APIs = []int{0, 1}
 
 // FileName is the manifest's name at the root of an addon's repository.
-const FileName = "nexora-addon.json"
+const FileName = "nx-addon.json"
 
 // WellKnownPath is where an addon serves its manifest, under its base URL.
-const WellKnownPath = "/.well-known/nexora-addon.json"
+const WellKnownPath = "/.well-known/nx-addon.json"
 
 // MaxManifestSize caps what the panel reads from an addon. A manifest is a
 // few hundred bytes; the cap is there so a wrong URL cannot stream a file in.

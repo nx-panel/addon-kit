@@ -136,14 +136,14 @@ var (
 )
 
 // EnvName is the environment variable an option's answer reaches the addon
-// in: NEXORA_OPT_ and the key in upper case.
-func EnvName(key string) string { return "NEXORA_OPT_" + strings.ToUpper(key) }
+// in: NX_OPT_ and the key in upper case.
+func EnvName(key string) string { return "NX_OPT_" + strings.ToUpper(key) }
 
-// The variables the install sets besides the options; the NEXORA_OPT_ prefix
+// The variables the install sets besides the options; the NX_OPT_ prefix
 // keeps an option from ever spelling one of them.
 const (
-	EnvPanelURL  = "NEXORA_PANEL_URL"
-	EnvClaimCode = "NEXORA_CLAIM_CODE"
+	EnvPanelURL  = "NX_PANEL_URL"
+	EnvClaimCode = "NX_CLAIM_CODE"
 )
 
 // MaxRateLimit is the most requests a minute a manifest may ask for its

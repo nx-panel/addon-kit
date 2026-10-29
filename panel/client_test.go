@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/nexora-vpn/addon-kit/panel"
+	"github.com/nx-panel/addon-kit/panel"
 )
 
 func TestTheClientSpeaksV1WithItsTokenAndKey(t *testing.T) {

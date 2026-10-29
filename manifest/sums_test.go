@@ -19,7 +19,7 @@ func TestASignedSHA256SUMS(t *testing.T) {
 	sums := []byte(strings.Repeat("ab", 32) + "  shop-linux-amd64.tar.gz\n" + strings.Repeat("CD", 32) + " *install.sh\n")
 	sig := SignSums(sums, priv)
 
-	if k, err := VerifySums(sums, sig, []Key{NexoraKey(), dev}); err != nil || k.Name != "developer" {
+	if k, err := VerifySums(sums, sig, []Key{NXKey(), dev}); err != nil || k.Name != "developer" {
 		t.Fatalf("the developer's own signature: %v %v", k, err)
 	}
 	if _, err := VerifySums(sums, SignSums(sums, other), []Key{dev}); !errors.Is(err, ErrSumsBadSignature) {

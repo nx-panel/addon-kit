@@ -32,7 +32,7 @@ var certClient = &http.Client{Timeout: 30 * time.Second}
 // as web.CertSource asks: have is the hex SHA-256 of the leaf held now, and
 // a certificate still the same comes back as nil PEM and no error. Before
 // registration it asks with the claim code, at the panel address the install
-// gave (NEXORA_PANEL_URL); after, with the token at the address the
+// gave (NX_PANEL_URL); after, with the token at the address the
 // credentials carry.
 func (a *Addon) PanelCertificate(ctx context.Context, have string) (certPEM, keyPEM []byte, err error) {
 	a.mu.Lock()

@@ -5,19 +5,19 @@ import (
 	"strings"
 	"testing"
 
-	addon "github.com/nexora-vpn/addon-kit/manifest"
+	addon "github.com/nx-panel/addon-kit/manifest"
 )
 
 // A v1 manifest as an addon's repository root carries it:
 // every option type, a conditional option, both install shapes.
 const v1Manifest = `{
-  "api": 1, "slug": "shop", "name": "Nexora Shop", "version": "1.0.0",
-  "publisher": "Nexora", "license": "proprietary", "paid": false,
+  "api": 1, "slug": "shop", "name": "NX Shop", "version": "1.0.0",
+  "publisher": "NX", "license": "proprietary", "paid": false,
   "description": {"en": "Sell and renew accounts", "fa": "فروش و تمدید حساب"},
-  "docs": "https://addons.nexora-panel.org/shop",
+  "docs": "https://addons.nx-panel.org/shop",
   "requires": {"panel": ">=0.1.0"},
   "install": {
-    "docker": {"image": "ghcr.io/nexora-vpn/shop", "compose": "deploy/compose.yml"},
+    "docker": {"image": "ghcr.io/nx-panel/shop", "compose": "deploy/compose.yml"},
     "binary": {"linux-amd64": "shop-linux-amd64.tar.gz", "linux-arm64": "shop-linux-arm64.tar.gz"},
     "options": [
       {"key": "port", "type": "port", "default": 8090, "label": {"en": "Port", "fa": "پورت"}},
@@ -34,7 +34,7 @@ const v1Manifest = `{
   },
   "scopes": [{"scope": "users:write", "purpose": "to create the accounts it sells"}],
   "rateLimit": 300,
-  "setup": "/nexora/setup", "health": "/health", "ui": "/"
+  "setup": "/nx/setup", "health": "/health", "ui": "/"
 }`
 
 func TestAV1ManifestWithEveryOptionTypeParses(t *testing.T) {
@@ -42,10 +42,10 @@ func TestAV1ManifestWithEveryOptionTypeParses(t *testing.T) {
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
-	if m.API != 1 || m.Install == nil || len(m.Install.Options) != 10 || m.Install.Docker.Image != "ghcr.io/nexora-vpn/shop" || m.RateLimit != 300 {
+	if m.API != 1 || m.Install == nil || len(m.Install.Options) != 10 || m.Install.Docker.Image != "ghcr.io/nx-panel/shop" || m.RateLimit != 300 {
 		t.Fatalf("manifest = %+v", m)
 	}
-	if got := addon.EnvName("database_dsn"); got != "NEXORA_OPT_DATABASE_DSN" {
+	if got := addon.EnvName("database_dsn"); got != "NX_OPT_DATABASE_DSN" {
 		t.Fatalf("EnvName = %q", got)
 	}
 }
@@ -63,7 +63,7 @@ func TestAMalformedV1ManifestNamesTheField(t *testing.T) {
 		{"when on a later option", `"when": {"database": "postgres"}`, `"when": {"public_url": "x"}`, "not an option declared before it"},
 		{"when value not a choice", `"when": {"database": "postgres"}`, `"when": {"database": "mysql"}`, "is not one of database's choices"},
 		{"bad port default", `"default": 8090`, `"default": 70000`, "port from 1 to 65535"},
-		{"tagged image", `"ghcr.io/nexora-vpn/shop"`, `"ghcr.io/nexora-vpn/shop:1.0.0"`, "install.docker.image"},
+		{"tagged image", `"ghcr.io/nx-panel/shop"`, `"ghcr.io/nx-panel/shop:1.0.0"`, "install.docker.image"},
 		{"compose escapes", `"deploy/compose.yml"`, `"../compose.yml"`, "install.docker.compose"},
 		{"unknown platform", `"linux-arm64"`, `"windows-amd64"`, "install.binary"},
 		{"bad requires", `">=0.1.0"`, `"^0.1"`, "requires.panel"},

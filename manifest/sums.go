@@ -28,7 +28,7 @@ const (
 
 // sumsDomain keeps a checksums signature from ever passing for a
 // manifest's, or the other way round: the bytes signed begin with it.
-const sumsDomain = "nexora-addon SHA256SUMS v1\n"
+const sumsDomain = "nx-addon SHA256SUMS v1\n"
 
 // ErrSumsUnsigned is a release with no SHA256SUMS.sig; ErrSumsBadSignature
 // one whose signature the manifest's key did not make.

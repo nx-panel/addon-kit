@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nexora-vpn/addon-kit/web"
+	"github.com/nx-panel/addon-kit/web"
 )
 
 // echo answers the path it saw and the base it came under.

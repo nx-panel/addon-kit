@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nexora-vpn/addon-kit/addon"
-	"github.com/nexora-vpn/addon-kit/manifest"
-	"github.com/nexora-vpn/addon-kit/web"
+	"github.com/nx-panel/addon-kit/addon"
+	"github.com/nx-panel/addon-kit/manifest"
+	"github.com/nx-panel/addon-kit/web"
 )
 
 // An addon is where web.TLS gets the panel's certificate from.
@@ -53,7 +53,7 @@ func TestTheCertificateIsFetchedByClaimCodeThenByToken(t *testing.T) {
 
 	body := setupBody("CODE-1")
 	body.Panel.URL = panel.URL
-	if code := post(t, srv.URL+"/nexora/setup", body, nil); code != http.StatusNoContent {
+	if code := post(t, srv.URL+"/nx/setup", body, nil); code != http.StatusNoContent {
 		t.Fatalf("setup = %d", code)
 	}
 	if cert, _, err := a.PanelCertificate(context.Background(), "abc"); err != nil || cert != nil {

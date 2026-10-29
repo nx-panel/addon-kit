@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nexora-vpn/addon-kit/manifest"
+	"github.com/nx-panel/addon-kit/manifest"
 )
 
 // BasePath reads the install's base-path answer: "/admin", or "" for the

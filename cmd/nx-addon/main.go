@@ -1,15 +1,15 @@
-// Command nexora-addon checks and signs an addon's manifest.
+// Command nx-addon checks and signs an addon's manifest.
 //
-//	nexora-addon check  nexora-addon.json      # is it a manifest a panel accepts?
-//	nexora-addon keygen -out addon.key         # a developer key (keep it secret)
-//	nexora-addon sign   -key addon.key nexora-addon.json > signed.json
-//	nexora-addon verify -pub <base64> nexora-addon.json
-//	nexora-addon sign-sums   -key addon.key SHA256SUMS > SHA256SUMS.sig
-//	nexora-addon verify-sums -pub <base64> SHA256SUMS SHA256SUMS.sig
+//	nx-addon check  nx-addon.json      # is it a manifest a panel accepts?
+//	nx-addon keygen -out addon.key         # a developer key (keep it secret)
+//	nx-addon sign   -key addon.key nx-addon.json > signed.json
+//	nx-addon verify -pub <base64> nx-addon.json
+//	nx-addon sign-sums   -key addon.key SHA256SUMS > SHA256SUMS.sig
+//	nx-addon verify-sums -pub <base64> SHA256SUMS SHA256SUMS.sig
 //
 // A verified addon is signed with its developer's own key, which the
-// directory at addons.nexora-panel.org vouches for; an official one with
-// Nexora's. The signature covers every field, so any edit means signing
+// directory at addons.nx-panel.org vouches for; an official one with
+// NX's. The signature covers every field, so any edit means signing
 // again — and the version changes with every release.
 //
 // A release's SHA256SUMS is signed with the same key, after the build, and
@@ -28,7 +28,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/nexora-vpn/addon-kit/manifest"
+	"github.com/nx-panel/addon-kit/manifest"
 )
 
 func main() {
@@ -89,7 +89,7 @@ func main() {
 		fmt.Println(string(signed))
 	case "verify":
 		fs := flag.NewFlagSet("verify", flag.ExitOnError)
-		pub := fs.String("pub", "", "a developer's public key (base64); Nexora's and the development key are always tried")
+		pub := fs.String("pub", "", "a developer's public key (base64); NX's and the development key are always tried")
 		_ = fs.Parse(args)
 		raw := readArg(fs.Args())
 		k, err := manifest.Verify(raw, keysWith(*pub))
@@ -116,7 +116,7 @@ func main() {
 		_, _ = os.Stdout.Write(manifest.SignSums(sums, priv))
 	case "verify-sums":
 		fs := flag.NewFlagSet("verify-sums", flag.ExitOnError)
-		pub := fs.String("pub", "", "a developer's public key (base64); Nexora's and the development key are always tried")
+		pub := fs.String("pub", "", "a developer's public key (base64); NX's and the development key are always tried")
 		_ = fs.Parse(args)
 		if fs.NArg() != 2 {
 			usage()
@@ -139,10 +139,10 @@ func main() {
 	}
 }
 
-// keysWith is Nexora's key, the development key and, when given, a
+// keysWith is NX's key, the development key and, when given, a
 // developer's base64 public key.
 func keysWith(pub string) []manifest.Key {
-	keys := []manifest.Key{manifest.NexoraKey(), manifest.DevKey()}
+	keys := []manifest.Key{manifest.NXKey(), manifest.DevKey()}
 	if pub != "" {
 		b, err := base64.StdEncoding.DecodeString(pub)
 		if err != nil || len(b) != ed25519.PublicKeySize {
@@ -183,7 +183,7 @@ func loadKey(path string) (ed25519.PrivateKey, error) {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: nexora-addon check|keygen|sign|verify|sign-sums|verify-sums …")
+	fmt.Fprintln(os.Stderr, "usage: nx-addon check|keygen|sign|verify|sign-sums|verify-sums …")
 	os.Exit(2)
 }
 

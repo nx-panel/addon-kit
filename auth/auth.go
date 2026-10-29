@@ -17,7 +17,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/nexora-vpn/addon-kit/manifest"
+	"github.com/nx-panel/addon-kit/manifest"
 	"golang.org/x/crypto/bcrypt"
 )
 

@@ -1,21 +1,21 @@
 # The addon manifest, version 1
 
-The contract between a Nexora addon and the panel, the directory at
-`addons.nexora-panel.org` and the panel's install wizard. The code that
+The contract between an NX addon and the panel, the directory at
+`addons.nx-panel.org` and the panel's install wizard. The code that
 enforces it is the `manifest` package of this module — the panel validates
 with the same code — so when this file and the code disagree, the code is
 right and this file is the bug. `api: 1` may still change until the first
-release of Nexora Shop, when it is frozen.
+release of NX Shop, when it is frozen.
 
 ## Where it lives
 
-- **`nexora-addon.json` at the root of the addon's public repository** — what
+- **`nx-addon.json` at the root of the addon's public repository** — what
   the directory and the install wizard read before anything runs. For a
   closed addon that is its public distribution repository.
 - **The same file served by the running addon** at
-  `/.well-known/nexora-addon.json`, which registration reads.
-- **Signed**: an official addon by Nexora, a verified one with its
-  developer's own key (`nexora-addon keygen` / `sign`), which the
+  `/.well-known/nx-addon.json`, which registration reads.
+- **Signed**: an official addon by NX, a verified one with its
+  developer's own key (`nx-addon keygen` / `sign`), which the
   directory's signed index vouches for. The signature covers every field but
   `signature`, re-encoded with keys sorted, so the file may be indented or
   reordered freely. An unsigned addon is registered by hand. A manifest that names one key twice in any object is refused: a map keeps the last and a struct merges them, so the two would be different documents.
@@ -47,7 +47,7 @@ release of Nexora Shop, when it is frozen.
 
 ```json
 "install": {
-  "docker": { "image": "ghcr.io/nexora-vpn/shop", "compose": "deploy/compose.yml" },
+  "docker": { "image": "ghcr.io/nx-panel/shop", "compose": "deploy/compose.yml" },
   "binary": { "linux-amd64": "shop-linux-amd64.tar.gz", "linux-arm64": "shop-linux-arm64.tar.gz" },
   "options": [ … ]
 }
@@ -70,11 +70,11 @@ the signature over it made with **the key that signs the manifest**, after
 the build:
 
 ```sh
-nexora-addon sign-sums -key addon.key SHA256SUMS > SHA256SUMS.sig
+nx-addon sign-sums -key addon.key SHA256SUMS > SHA256SUMS.sig
 gh release upload v1.2.3 SHA256SUMS.sig
 ```
 
-The signature is the base64 Ed25519 signature of `nexora-addon SHA256SUMS
+The signature is the base64 Ed25519 signature of `nx-addon SHA256SUMS
 v1\n` followed by the file's bytes (`manifest.SignSums`, `VerifySums`), so
 it can never pass for a manifest's. The panel installs, updates or removes
 an addon over SSH only when the release's `install.sh` — and, for a
@@ -109,9 +109,9 @@ The questions the install asks, at most 32, in the order shown:
 | `choices` | a `choice`'s values, 1–32, each at most 64 |
 | `when` | `{ "<key>": "<value>" }` — shown only while that option, declared **before** this one and a `choice` or `bool`, has that value (`"true"` / `"false"` for a bool) |
 
-Answers reach the addon as **environment variables `NEXORA_OPT_<KEY>`** (an
+Answers reach the addon as **environment variables `NX_OPT_<KEY>`** (an
 `.env` beside the compose file, or the systemd unit's `EnvironmentFile`),
-beside **`NEXORA_PANEL_URL`** and **`NEXORA_CLAIM_CODE`**, the code the panel
+beside **`NX_PANEL_URL`** and **`NX_CLAIM_CODE`**, the code the panel
 issued for the install. A `bool` is `true` / `false`, a number in its
 JSON spelling.
 

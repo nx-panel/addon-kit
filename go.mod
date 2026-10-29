@@ -1,4 +1,4 @@
-module github.com/nexora-vpn/addon-kit
+module github.com/nx-panel/addon-kit
 
 go 1.27.3
 

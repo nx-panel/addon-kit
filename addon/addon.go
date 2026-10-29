@@ -1,18 +1,18 @@
-// Package addon is the running half of a Nexora addon: serving the manifest,
+// Package addon is the running half of an NX addon: serving the manifest,
 // taking the credentials the panel delivers at registration, receiving the
 // panel's signed events, and answering the health check. An addon is a
 // separate program that talks to the panel over the network only; this
 // package is what every addon would otherwise write again.
 //
-//	raw, _ := os.ReadFile("nexora-addon.json")
+//	raw, _ := os.ReadFile("nx-addon.json")
 //	a, err := addon.New(addon.Config{Manifest: raw, DataDir: "data"})
 //	a.OnEvent(func(e addon.Event) { … })
 //	mux := http.NewServeMux()
 //	a.Mount(mux)
 //
 // The install (by hand or by the panel) passes the claim code in
-// NEXORA_CLAIM_CODE and the answers to the manifest's install options in
-// NEXORA_OPT_<KEY>; FromEnv reads them.
+// NX_CLAIM_CODE and the answers to the manifest's install options in
+// NX_OPT_<KEY>; FromEnv reads them.
 package addon
 
 import (
@@ -32,18 +32,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nexora-vpn/addon-kit/manifest"
+	"github.com/nx-panel/addon-kit/manifest"
 )
 
 // Config is how an addon is set up.
 type Config struct {
-	// Manifest is the addon's nexora-addon.json, exactly as served (signed,
+	// Manifest is the addon's nx-addon.json, exactly as served (signed,
 	// for an official or verified addon). Required.
 	Manifest []byte
 	// ClaimCode is the one-time code that lets the panel deliver the
 	// credentials. Empty draws one and logs it, for an install done by hand.
 	ClaimCode string
-	// DataDir is where the credentials are kept (nexora-credentials.json,
+	// DataDir is where the credentials are kept (nx-credentials.json,
 	// mode 0600). Empty keeps them in memory only, which a restart loses.
 	DataDir string
 	// Healthy answers the health check; nil is always healthy.
@@ -53,7 +53,7 @@ type Config struct {
 }
 
 // FromEnv fills what the install passes in the environment: the claim code
-// (NEXORA_CLAIM_CODE) when the config has none.
+// (NX_CLAIM_CODE) when the config has none.
 func (c Config) FromEnv() Config {
 	if c.ClaimCode == "" {
 		c.ClaimCode = os.Getenv(manifest.EnvClaimCode)
@@ -62,11 +62,11 @@ func (c Config) FromEnv() Config {
 }
 
 // Option is the answer the install gave to one of the manifest's install
-// options, from NEXORA_OPT_<KEY>; "" when it was not given.
+// options, from NX_OPT_<KEY>; "" when it was not given.
 func Option(key string) string { return os.Getenv(manifest.EnvName(key)) }
 
 // PanelURL is the panel's address as the install gave it
-// (NEXORA_PANEL_URL); the credentials carry the one the panel saw itself.
+// (NX_PANEL_URL); the credentials carry the one the panel saw itself.
 func PanelURL() string { return os.Getenv(manifest.EnvPanelURL) }
 
 // Credentials are what the panel delivered at registration.
@@ -110,7 +110,7 @@ type Event struct {
 	Time       int64           `json:"time"`
 	Data       json.RawMessage `json:"data"`
 	Recipients []uint          `json:"recipients,omitempty"`
-	// Delivery is X-Nexora-Delivery: the same on every retry of this
+	// Delivery is X-Nx-Delivery: the same on every retry of this
 	// delivery, which is what a receiver deduplicates on.
 	Delivery string `json:"-"`
 }
@@ -139,7 +139,7 @@ type Addon struct {
 func New(cfg Config) (*Addon, error) {
 	m, err := manifest.Parse(cfg.Manifest)
 	if err != nil {
-		return nil, fmt.Errorf("nexora-addon.json: %w", err)
+		return nil, fmt.Errorf("nx-addon.json: %w", err)
 	}
 	a := &Addon{cfg: cfg, manifest: m, claim: cfg.ClaimCode, seen: map[string]time.Time{}, running: map[string]bool{}}
 	if a.cfg.Logf == nil {
@@ -162,7 +162,7 @@ func New(cfg Config) (*Addon, error) {
 		if err := os.Remove(filepath.Join(a.cfg.DataDir, credentialsFile)); err != nil {
 			return nil, err
 		}
-		a.cfg.Logf("nexora: a new install (another claim code): the earlier registration with %s is dropped", creds.Panel.URL)
+		a.cfg.Logf("nx: a new install (another claim code): the earlier registration with %s is dropped", creds.Panel.URL)
 		creds = nil
 	}
 	if creds != nil {
@@ -175,7 +175,7 @@ func New(cfg Config) (*Addon, error) {
 			return nil, err
 		}
 		a.claim = strings.ToUpper(hex.EncodeToString(buf))
-		a.cfg.Logf("nexora: not registered yet — claim code %s", a.claim)
+		a.cfg.Logf("nx: not registered yet — claim code %s", a.claim)
 	}
 	return a, nil
 }
@@ -308,7 +308,7 @@ func (a *Addon) handleSetup(w http.ResponseWriter, r *http.Request) {
 	}
 	if a.claim == "" || !hmac.Equal([]byte(req.ClaimCode), []byte(a.claim)) {
 		a.mu.Unlock()
-		a.cfg.Logf("nexora: setup refused: wrong claim code")
+		a.cfg.Logf("nx: setup refused: wrong claim code")
 		http.Error(w, "wrong claim code", http.StatusForbidden)
 		return
 	}
@@ -321,18 +321,18 @@ func (a *Addon) handleSetup(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := a.save(creds); err != nil {
 		a.mu.Unlock()
-		a.cfg.Logf("nexora: keeping the credentials failed: %v", err)
+		a.cfg.Logf("nx: keeping the credentials failed: %v", err)
 		http.Error(w, "could not keep the credentials", http.StatusInternalServerError)
 		return
 	}
 	a.creds = creds
 	a.newInstall = false
 	if err := a.recordClaim(); err != nil {
-		a.cfg.Logf("nexora: keeping the claim code's record failed: %v", err)
+		a.cfg.Logf("nx: keeping the claim code's record failed: %v", err)
 	}
 	onSetup := a.onSetup
 	a.mu.Unlock()
-	a.cfg.Logf("nexora: registered with %s (panel %s)", creds.Panel.URL, creds.Panel.Version)
+	a.cfg.Logf("nx: registered with %s (panel %s)", creds.Panel.URL, creds.Panel.Version)
 	if onSetup != nil {
 		onSetup(*creds)
 	}
@@ -343,7 +343,7 @@ func (a *Addon) handleSetup(w http.ResponseWriter, r *http.Request) {
 const MaxSkew = 5 * time.Minute
 
 // handleEvent hands on a delivery whose signature the webhook secret
-// verifies, once per X-Nexora-Delivery.
+// verifies, once per X-Nx-Delivery.
 func (a *Addon) handleEvent(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 	if err != nil {
@@ -357,8 +357,8 @@ func (a *Addon) handleEvent(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "not registered", http.StatusServiceUnavailable)
 		return
 	}
-	if err := VerifySignature(creds.Webhook.Secret, r.Header.Get("X-Nexora-Signature"), body, time.Now(), MaxSkew); err != nil {
-		a.cfg.Logf("nexora: delivery refused: %v", err)
+	if err := VerifySignature(creds.Webhook.Secret, r.Header.Get("X-Nx-Signature"), body, time.Now(), MaxSkew); err != nil {
+		a.cfg.Logf("nx: delivery refused: %v", err)
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
@@ -367,7 +367,7 @@ func (a *Addon) handleEvent(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad body", http.StatusBadRequest)
 		return
 	}
-	ev.Delivery = r.Header.Get("X-Nexora-Delivery")
+	ev.Delivery = r.Header.Get("X-Nx-Delivery")
 	if ev.Delivery != "" {
 		switch a.claimDelivery(ev.Delivery) {
 		case deliveryDone:
@@ -386,7 +386,7 @@ func (a *Addon) handleEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		// Not taken: the panel retries it, and the retry is not a repeat.
-		a.cfg.Logf("nexora: event %s (delivery %s) not taken: %v", ev.Event, ev.Delivery, err)
+		a.cfg.Logf("nx: event %s (delivery %s) not taken: %v", ev.Event, ev.Delivery, err)
 		http.Error(w, "not taken; try again", http.StatusInternalServerError)
 		return
 	}
@@ -447,10 +447,10 @@ func (a *Addon) finishDelivery(id string, taken bool) {
 	}
 }
 
-const credentialsFile = "nexora-credentials.json"
+const credentialsFile = "nx-credentials.json"
 
 // claimFile keeps a hash of the claim code the addon was registered with.
-const claimFile = "nexora-claim"
+const claimFile = "nx-claim"
 
 // checkClaim reports whether the claim code this run was given differs
 // from the one recorded: a new install. The record is the claim code the
@@ -536,7 +536,7 @@ func (a *Addon) Forget() error {
 		return err
 	}
 	a.claim = strings.ToUpper(hex.EncodeToString(buf))
-	a.cfg.Logf("nexora: credentials dropped — new claim code %s", a.claim)
+	a.cfg.Logf("nx: credentials dropped — new claim code %s", a.claim)
 	if a.cfg.DataDir == "" {
 		return nil
 	}

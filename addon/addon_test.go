@@ -11,13 +11,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nexora-vpn/addon-kit/addon"
-	"github.com/nexora-vpn/addon-kit/manifest"
+	"github.com/nx-panel/addon-kit/addon"
+	"github.com/nx-panel/addon-kit/manifest"
 )
 
 const testManifest = `{"api": 1, "slug": "demo", "name": "Demo", "version": "0.1.0", "publisher": "x",
   "scopes": [{"scope": "users:read", "purpose": "list"}], "events": ["user.created"],
-  "webhook": "/nexora/events", "setup": "/nexora/setup", "health": "/health"}`
+  "webhook": "/nx/events", "setup": "/nx/setup", "health": "/health"}`
 
 func start(t *testing.T, dir string, healthy func() error) (*addon.Addon, *httptest.Server) {
 	t.Helper()
@@ -51,23 +51,23 @@ func setupBody(code string) manifest.SetupRequest {
 	return manifest.SetupRequest{
 		API: 1, ClaimCode: code, Panel: manifest.SetupPanel{URL: "https://panel.example", Version: "0.1.0"},
 		Token: "tok", Scopes: []string{"users:read"},
-		Webhook: &manifest.SetupWebhook{ID: 7, URL: "https://addon/nexora/events", Events: []string{"user.created"}, Secret: "s3cret"},
+		Webhook: &manifest.SetupWebhook{ID: 7, URL: "https://addon/nx/events", Events: []string{"user.created"}, Secret: "s3cret"},
 	}
 }
 
 func TestTheCredentialsArriveOnceWithTheClaimCodeAndSurviveARestart(t *testing.T) {
 	dir := t.TempDir()
 	a, srv := start(t, dir, nil)
-	if code := post(t, srv.URL+"/nexora/setup", setupBody("WRONG"), nil); code != http.StatusForbidden {
+	if code := post(t, srv.URL+"/nx/setup", setupBody("WRONG"), nil); code != http.StatusForbidden {
 		t.Fatalf("wrong code = %d", code)
 	}
 	if a.Credentials() != nil {
 		t.Fatal("a wrong code delivered credentials")
 	}
-	if code := post(t, srv.URL+"/nexora/setup", setupBody("CODE-1"), nil); code != http.StatusNoContent {
+	if code := post(t, srv.URL+"/nx/setup", setupBody("CODE-1"), nil); code != http.StatusNoContent {
 		t.Fatalf("right code = %d", code)
 	}
-	if code := post(t, srv.URL+"/nexora/setup", setupBody("CODE-1"), nil); code != http.StatusConflict {
+	if code := post(t, srv.URL+"/nx/setup", setupBody("CODE-1"), nil); code != http.StatusConflict {
 		t.Fatalf("second setup = %d", code)
 	}
 	again, err := addon.New(addon.Config{Manifest: []byte(testManifest), DataDir: dir, Logf: t.Logf})
@@ -97,7 +97,7 @@ func TestANewClaimCodeIsANewInstall(t *testing.T) {
 	if a.NewInstall() {
 		t.Fatal("the first run is a new install over nothing")
 	}
-	if code := post(t, srv.URL+"/nexora/setup", setupBody("CODE-1"), nil); code != http.StatusNoContent {
+	if code := post(t, srv.URL+"/nx/setup", setupBody("CODE-1"), nil); code != http.StatusNoContent {
 		t.Fatalf("setup = %d", code)
 	}
 	if again := open("CODE-1"); again.NewInstall() || again.Credentials() == nil {
@@ -124,7 +124,7 @@ func TestANewClaimCodeIsANewInstall(t *testing.T) {
 	fresh.Mount(mux)
 	srv2 := httptest.NewServer(mux)
 	defer srv2.Close()
-	if code := post(t, srv2.URL+"/nexora/setup", setupBody("CODE-2"), nil); code != http.StatusNoContent {
+	if code := post(t, srv2.URL+"/nx/setup", setupBody("CODE-2"), nil); code != http.StatusNoContent {
 		t.Fatalf("the new install's registration = %d", code)
 	}
 	if fresh.NewInstall() {
@@ -135,7 +135,7 @@ func TestANewClaimCodeIsANewInstall(t *testing.T) {
 	}
 	// Data an older kit wrote has no record: its claim code is taken as
 	// the one it was installed with.
-	if err := os.Remove(filepath.Join(dir, "nexora-claim")); err != nil {
+	if err := os.Remove(filepath.Join(dir, "nx-claim")); err != nil {
 		t.Fatal(err)
 	}
 	if older := open("CODE-3"); older.NewInstall() || older.Credentials() == nil {
@@ -145,15 +145,15 @@ func TestANewClaimCodeIsANewInstall(t *testing.T) {
 
 func TestOnlySignedFreshDeliveriesReachTheAddonOnce(t *testing.T) {
 	a, srv := start(t, "", nil)
-	post(t, srv.URL+"/nexora/setup", setupBody("CODE-1"), nil)
+	post(t, srv.URL+"/nx/setup", setupBody("CODE-1"), nil)
 	var got []addon.Event
 	a.OnEvent(func(e addon.Event) { got = append(got, e) })
 
 	body := []byte(`{"v":1,"id":3,"event":"user.created","time":1,"data":{"userId":1}}`)
 	send := func(secret string, at time.Time, delivery string) int {
-		req, _ := http.NewRequest(http.MethodPost, srv.URL+"/nexora/events", bytes.NewReader(body))
-		req.Header.Set("X-Nexora-Signature", addon.Sign(secret, at.Unix(), body))
-		req.Header.Set("X-Nexora-Delivery", delivery)
+		req, _ := http.NewRequest(http.MethodPost, srv.URL+"/nx/events", bytes.NewReader(body))
+		req.Header.Set("X-Nx-Signature", addon.Sign(secret, at.Unix(), body))
+		req.Header.Set("X-Nx-Delivery", delivery)
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Fatal(err)
@@ -202,8 +202,8 @@ func TestHealthAnswersWhatTheAddonSays(t *testing.T) {
 }
 
 func TestOptionsComeFromTheEnvironment(t *testing.T) {
-	t.Setenv("NEXORA_OPT_DATABASE", "postgres")
-	t.Setenv("NEXORA_CLAIM_CODE", "FROM-ENV")
+	t.Setenv("NX_OPT_DATABASE", "postgres")
+	t.Setenv("NX_CLAIM_CODE", "FROM-ENV")
 	if got := addon.Option("database"); got != "postgres" {
 		t.Fatalf("Option = %q", got)
 	}
@@ -224,7 +224,7 @@ func TestAnEventNotTakenIsDeliveredAgain(t *testing.T) {
 	a, srv := start(t, "", nil)
 	body := setupBody("CODE-1")
 	body.Panel.PublicURL = "https://vpn.example/sub"
-	post(t, srv.URL+"/nexora/setup", body, nil)
+	post(t, srv.URL+"/nx/setup", body, nil)
 	if c := a.Credentials(); c == nil || c.Panel.PublicURL != "https://vpn.example/sub" {
 		t.Fatalf("the public address was not kept: %+v", c)
 	}
@@ -241,9 +241,9 @@ func TestAnEventNotTakenIsDeliveredAgain(t *testing.T) {
 	})
 	ev := []byte(`{"v":1,"id":4,"event":"user.created","time":1,"data":{}}`)
 	send := func() int {
-		req, _ := http.NewRequest(http.MethodPost, srv.URL+"/nexora/events", bytes.NewReader(ev))
-		req.Header.Set("X-Nexora-Signature", addon.Sign("s3cret", time.Now().Unix(), ev))
-		req.Header.Set("X-Nexora-Delivery", "42")
+		req, _ := http.NewRequest(http.MethodPost, srv.URL+"/nx/events", bytes.NewReader(ev))
+		req.Header.Set("X-Nx-Signature", addon.Sign("s3cret", time.Now().Unix(), ev))
+		req.Header.Set("X-Nx-Delivery", "42")
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Fatal(err)
@@ -266,7 +266,7 @@ func TestAnEventNotTakenIsDeliveredAgain(t *testing.T) {
 // retry is answered 503, so if the first then fails the event is not lost.
 func TestARetryWhileTheFirstAttemptRunsIsNotTaken(t *testing.T) {
 	a, srv := start(t, "", nil)
-	post(t, srv.URL+"/nexora/setup", setupBody("CODE-1"), nil)
+	post(t, srv.URL+"/nx/setup", setupBody("CODE-1"), nil)
 	release := make(chan struct{})
 	started := make(chan struct{})
 	calls := 0
@@ -281,9 +281,9 @@ func TestARetryWhileTheFirstAttemptRunsIsNotTaken(t *testing.T) {
 	})
 	ev := []byte(`{"v":1,"id":5,"event":"user.created","time":1,"data":{}}`)
 	send := func() int {
-		req, _ := http.NewRequest(http.MethodPost, srv.URL+"/nexora/events", bytes.NewReader(ev))
-		req.Header.Set("X-Nexora-Signature", addon.Sign("s3cret", time.Now().Unix(), ev))
-		req.Header.Set("X-Nexora-Delivery", "77")
+		req, _ := http.NewRequest(http.MethodPost, srv.URL+"/nx/events", bytes.NewReader(ev))
+		req.Header.Set("X-Nx-Signature", addon.Sign("s3cret", time.Now().Unix(), ev))
+		req.Header.Set("X-Nx-Delivery", "77")
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Error(err)

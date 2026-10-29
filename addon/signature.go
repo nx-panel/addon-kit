@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// VerifySignature checks a delivery's X-Nexora-Signature the way the panel
+// VerifySignature checks a delivery's X-Nx-Signature the way the panel
 // signs it: `t=<unix>,v1=<hex>`, the hex being HMAC-SHA256(secret,
 // "<t>.<body>"). The timestamp is inside the MAC, so refusing one older than
 // maxSkew refuses a captured delivery replayed later.

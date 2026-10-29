@@ -9,12 +9,12 @@ import (
 	"strings"
 	"testing"
 
-	addon "github.com/nexora-vpn/addon-kit/manifest"
+	addon "github.com/nx-panel/addon-kit/manifest"
 )
 
 func sample() addon.Manifest {
 	return addon.Manifest{
-		API: addon.API, Slug: "shop", Name: "Shop", Version: "1.0.0", Publisher: "Nexora",
+		API: addon.API, Slug: "shop", Name: "Shop", Version: "1.0.0", Publisher: "NX",
 		Scopes:  []addon.Scope{{Scope: "users:read", Purpose: "to list the accounts it sells"}},
 		Events:  []string{"user.created"},
 		Webhook: "/hooks", Setup: "/setup", Health: "/health", UI: "/",
@@ -161,7 +161,7 @@ func TestPathsTheKitCannotServeAreRefused(t *testing.T) {
 	for _, tail := range []string{
 		`"setup":"/s/{a","webhook":"/hook"}`,
 		`"setup":"/hook","webhook":"/hook"}`,
-		`"setup":"/setup","webhook":"/hook","health":"/.well-known/nexora-addon.json"}`,
+		`"setup":"/setup","webhook":"/hook","health":"/.well-known/nx-addon.json"}`,
 	} {
 		if _, err := addon.Parse([]byte(base + tail)); err == nil {
 			t.Errorf("%s passed", tail)
@@ -173,12 +173,12 @@ func TestPathsTheKitCannotServeAreRefused(t *testing.T) {
 // never match, and a %-escape is matched unescaped — so two different
 // strings could be one route.
 func TestAPathMustBeCleanAndUnescaped(t *testing.T) {
-	for _, p := range []string{"/a//b", "/a/./b", "/a/.", "/hoo%6B", "/.well-known/nexora-addon%2Ejson"} {
+	for _, p := range []string{"/a//b", "/a/./b", "/a/.", "/hoo%6B", "/.well-known/nx-addon%2Ejson"} {
 		if addon.ValidPath(p) {
 			t.Errorf("ValidPath(%q) took it", p)
 		}
 	}
-	for _, p := range []string{"/", "/a", "/a/b/", "/nexora/setup"} {
+	for _, p := range []string{"/", "/a", "/a/b/", "/nx/setup"} {
 		if !addon.ValidPath(p) {
 			t.Errorf("ValidPath(%q) refused it", p)
 		}

@@ -16,19 +16,19 @@ type Key struct {
 	Public ed25519.PublicKey
 }
 
-// nexoraKeyB64 verifies the manifests Nexora signs: its official addons.
-// The private half never leaves Nexora. To rotate, a second key is added
+// nxKeyB64 verifies the manifests NX signs: its official addons.
+// The private half never leaves NX. To rotate, a second key is added
 // beside this one, the addons are re-signed, and the old one goes a release
 // later.
-const nexoraKeyB64 = "lWobXQl7JVIMNOAzngASRZg0hArCftGCmSLzmQpjjCM="
+const nxKeyB64 = "lWobXQl7JVIMNOAzngASRZg0hArCftGCmSLzmQpjjCM="
 
-// NexoraKey is the key official addons are signed with.
-func NexoraKey() Key {
-	pub, err := base64.StdEncoding.DecodeString(nexoraKeyB64)
+// NXKey is the key official addons are signed with.
+func NXKey() Key {
+	pub, err := base64.StdEncoding.DecodeString(nxKeyB64)
 	if err != nil || len(pub) != ed25519.PublicKeySize {
 		panic("manifest: bad embedded public key")
 	}
-	return Key{Name: "Nexora", Public: ed25519.PublicKey(pub)}
+	return Key{Name: "NX", Public: ed25519.PublicKey(pub)}
 }
 
 // ErrUnsigned is a manifest with no signature at all; ErrBadSignature one
@@ -87,7 +87,7 @@ func Verify(raw []byte, keys []Key) (Key, error) {
 }
 
 // Sign returns the manifest with its signature set, indented for serving.
-// Used by the signing tools (cmd/nexora-addon here, the panel's addonsign)
+// Used by the signing tools (cmd/nx-addon here, the panel's addonsign)
 // and the test addons; a panel never signs.
 func Sign(raw []byte, priv ed25519.PrivateKey) ([]byte, error) {
 	payload, err := SigningPayload(raw)
@@ -115,7 +115,7 @@ func Digest(raw []byte) string {
 // devSeed makes the development key: a key anyone can derive from this
 // source, which is the point — it signs test addons, and only a panel built
 // with -tags addondev trusts it, so no release accepts a manifest it signed.
-var devSeed = sha256.Sum256([]byte("nexora addon development key — trusted only by -tags addondev"))
+var devSeed = sha256.Sum256([]byte("nx addon development key — trusted only by -tags addondev"))
 
 // DevPrivateKey is the development key's private half.
 func DevPrivateKey() ed25519.PrivateKey { return ed25519.NewKeyFromSeed(devSeed[:]) }

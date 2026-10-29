@@ -48,8 +48,8 @@ func TestACodeIsTakenOnce(t *testing.T) {
 	if _, ok := VerifyTOTP(secret, TOTPCode(secret, now.Add(-90*time.Second)), now, 0); ok {
 		t.Fatal("three steps back was taken")
 	}
-	uri := TOTPURI("Nexora Notif", "admin", secret)
-	if !strings.HasPrefix(uri, "otpauth://totp/Nexora%20Notif:admin?") || !strings.Contains(uri, "issuer=Nexora+Notif") {
+	uri := TOTPURI("NX Notif", "admin", secret)
+	if !strings.HasPrefix(uri, "otpauth://totp/NX%20Notif:admin?") || !strings.Contains(uri, "issuer=NX+Notif") {
 		t.Fatalf("uri %s", uri)
 	}
 }
