@@ -69,7 +69,9 @@ func HashToken(t string) string {
 
 // ClientAddr is the request's peer address without the port. It is the
 // connection's, never a forwarded header's: an addon behind a proxy it
-// trusts sets r.RemoteAddr itself.
+// trusts puts web.Proxies' handler in front, which sets r.RemoteAddr to the
+// client the proxy names. Without it, behind a proxy every request is the
+// proxy's, and a Limiter keyed on this locks everyone out together.
 func ClientAddr(r *http.Request) string {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
