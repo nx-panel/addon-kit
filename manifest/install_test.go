@@ -88,8 +88,8 @@ func TestAMalformedV1ManifestNamesTheField(t *testing.T) {
 	}
 }
 
-// An api 0 manifest is Phase F's and stays valid; it may not borrow api 1's
-// fields, which an api 0 panel would not have read.
+// An api 0 manifest, the first addon API's, stays valid; it may not borrow
+// api 1's fields, which an api 0 panel would not have read.
 func TestAnAPI0ManifestStaysValidAndStaysV0(t *testing.T) {
 	v0 := `{"api": 0, "slug": "old", "name": "Old", "version": "0.1.0", "publisher": "x",
 	        "scopes": [{"scope": "users:read", "purpose": "list"}], "setup": "/setup"}`

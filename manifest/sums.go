@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// A release's checksums and their signature (docs/phase-g.md P45 (b′)):
+// A release's checksums and their signature:
 // SHA256SUMS lists every asset — the binaries and install.sh among them —
 // as sha256sum writes it, and SHA256SUMS.sig is the developer's signature
 // over it with the key that signs the manifest. The manifest cannot pin the

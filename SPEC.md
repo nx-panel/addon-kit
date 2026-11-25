@@ -24,7 +24,7 @@ release of NX Shop, when it is frozen.
 
 | Field | Required | Meaning |
 | --- | --- | --- |
-| `api` | yes | `1` (this document) or `0` (Phase F's; may not carry any field below marked v1) |
+| `api` | yes | `1` (this document) or `0` (the first addon API; may not carry any field below marked v1) |
 | `slug` | yes | the addon id: `a-z0-9_-`, starting with a letter or digit, at most 32 |
 | `name` | yes | at most 64 characters |
 | `version` | | the release, semver; the directory compares it for update badges |

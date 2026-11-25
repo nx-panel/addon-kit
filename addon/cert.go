@@ -12,12 +12,11 @@ import (
 	"time"
 )
 
-// The certificate the panel holds for this addon (the panel's
-// docs/phase-h.md H-S2): the main admin chooses it, the panel issues and
-// renews it, and the addon fetches it — by its token once registered, by its
-// claim code before, since the panel reads the manifest over https at the
-// registration. web.TLS in the https mode "panel" asks for it through
-// PanelCertificate.
+// The certificate the panel holds for this addon: the main admin chooses
+// it, the panel issues and renews it, and the addon fetches it — by its
+// token once registered, by its claim code before, since the panel reads
+// the manifest over https at the registration. web.TLS in the https mode
+// "panel" asks for it through PanelCertificate.
 
 // certPaths are where the panel answers, under its /api/v1.
 const (
